@@ -199,7 +199,7 @@ button:active {
   font-size: 0.8em;
 }
 
-.loading-screen-container {
+.loading-screen-container, .no-search-results {
   position: absolute;
   top:0;
   bottom: 0;
@@ -213,5 +213,9 @@ button:active {
 
 .loading-text {
   margin-top: 10px;
+  color: #808080;
+}
+
+.no-search-results {
   color: #808080;
 }
