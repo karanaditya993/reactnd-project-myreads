@@ -12,14 +12,15 @@ const loadingText = 'Loading your books...';
 class BooksApp extends React.Component {
   state = {
     showLoadingScreen: true,
-    books: {},
+    partitionedBooks: {},
+    rawBooks: [],
   };
 
   componentDidMount() {
       setTimeout(() => {
           BooksAPI.getAll().then((books) => {
               this.setState(() => ({
-                  books: partitionBooks(books),
+                  partitionedBooks: partitionBooks(books),
                   showLoadingScreen: false,
               }))
           });
@@ -32,7 +33,7 @@ class BooksApp extends React.Component {
           <Route exact path='/' render={() =>
               this.state.showLoadingScreen ? (<LoadingScreen isLoading={this.state.showLoadingScreen} text={loadingText}/>) :
                   (<div className="books-list-container">
-                        <BooksList books={this.state.books}></BooksList>
+                        <BooksList books={this.state.partitionedBooks}></BooksList>
                         <div className="open-search">
                             <Link to='/search'>
                                 <button>Add a book</button>
@@ -41,9 +42,20 @@ class BooksApp extends React.Component {
                   </div>)}
           />
         <Route exact path='/search' render={({ history }) =>
-            <SearchBooks onSearchClose={ () => {
-                history.push('/');
-            }}/>
+            <SearchBooks
+                books={this.state.rawBooks}
+                onSearchClose={ () => {
+                    history.push('/');
+                }}
+                /* passing onSearch as a prop because I don't want to import BooksAPI into SearchBooks component */
+                onSearch={ (query) => {
+                    BooksAPI.search(query).then((books) => {
+                        this.setState({
+                            rawBooks: books,
+                        });
+                    })
+                }}
+            />
         }/>
       </div>
     )
