@@ -48,12 +48,16 @@ class BooksApp extends React.Component {
                     history.push('/');
                 }}
                 /* passing onSearch as a prop because I don't want to import BooksAPI into SearchBooks component */
-                onSearch={ (query) => {
-                    BooksAPI.search(query).then((books) => {
-                        this.setState({
-                            rawBooks: books,
-                        });
-                    })
+                onSearch={ (query, callback) => {
+                    setTimeout(() => {
+                        BooksAPI.search(query).then((books) => {
+                            let isEmpty =(books && books.items && books.items.length === 0 && books.error) || !books;
+                            this.setState({
+                                rawBooks: isEmpty ? [] : books,
+                            });
+                            callback(books);
+                        })
+                    }, 500);
                 }}
             />
         }/>
