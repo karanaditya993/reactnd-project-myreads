@@ -6,6 +6,7 @@ import BooksList from './components/BooksList'
 import LoadingScreen from './components/LoadingScreen'
 import partitionBooks from './helpers/partitionBooks'
 import { Route, Link } from 'react-router-dom'
+import Alert  from './components/Alert'
 
 const loadingText = 'Loading your books...';
 
@@ -14,6 +15,8 @@ class BooksApp extends React.Component {
       showLoadingScreen: true,
       partitionedBooks: {},
       rawBooks: [],
+      showAlert: false,
+      updatedBookTitle: ''
   };
 
   setMovingBook(book) {
@@ -38,24 +41,28 @@ class BooksApp extends React.Component {
       }, 0)
   }
 
-  updateBooks(book, shelf) {
-      this.setMovingBook(book);
+  updateBooks(book, shelf, loadNewBooks) {
       BooksAPI.update(book, shelf).then(() => {
-          BooksAPI.get(book.id).then((updatedBook) => {
-              const newBooks = this.state.rawBooks.map((book) => {
-                  if (book.id === updatedBook.id) {
-                      book.shelf = updatedBook.shelf;
-                      if (book.loading) {
-                          book.loading = false;
-                      }
-                  }
-                  return book;
+          if (!loadNewBooks) {
+               this.setState({
+                   showAlert: true,
+                   updatedBookTitle: book.title
               });
-              this.loadBooks(newBooks);
-              // this.loadBooks(newBooks, {
-              //     movingBook: false,
-              // });
-          });
+          }
+          if (loadNewBooks) {
+              BooksAPI.get(book.id).then((updatedBook) => {
+                  const newBooks = this.state.rawBooks.map((book) => {
+                      if (book.id === updatedBook.id) {
+                          book.shelf = updatedBook.shelf;
+                          if (book.loading) {
+                              book.loading = false;
+                          }
+                      }
+                      return book;
+                  });
+                  this.loadBooks(newBooks);
+              });
+          }
       });
   }
 
@@ -89,7 +96,10 @@ class BooksApp extends React.Component {
                   (<div className="books-list-container">
                         <BooksList
                             books={this.state.partitionedBooks}
-                            updateBooks={(book, shelf) => { this.updateBooks(book, shelf) }}
+                            updateBooks={(book, shelf) => {
+                                this.setMovingBook(book);
+                                this.updateBooks(book, shelf, true)
+                            }}
                         />
                         <div className="open-search">
                             <Link to='/search'>
@@ -103,11 +113,20 @@ class BooksApp extends React.Component {
                 books={this.state.rawBooks}
                 onSearchClose={ () => {
                     history.push('/');
+                    this.setState(() => {});
                 }}
                 onSearch={ (query, callback) => { this.searchBooks(query, callback) }}
-                updateBooks={ () => {}}
+                updateBooks={ (book, shelf) => {
+                    this.setState({
+                        showAlert: false,
+                    });
+                    this.updateBooks(book, shelf);
+                }}
             />
         }/>
+        {this.state.showAlert && (
+            <Alert updatedBook={this.state.updatedBookTitle}/>
+        )}
       </div>
     )
   }

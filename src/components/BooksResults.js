@@ -3,15 +3,14 @@ import { PropTypes  }  from 'prop-types'
 import BookshelfArranger from './BookshelfArranger';
 import ClipLoader from 'react-spinners/ClipLoader'
 
-export default class BookResults extends Component {
+export default class BooksResults extends Component {
     static propTypes = {
         books: PropTypes.array.isRequired,
         updateBooks: PropTypes.func,
-        movingBook: PropTypes.bool,
     };
 
     render()  {
-        const { books } = this.props;
+        const { books, updateBooks } = this.props;
 
         return (
             <ol className="books-grid">
@@ -36,7 +35,7 @@ export default class BookResults extends Component {
                              <BookshelfArranger
                                  book={book}
                                  updateShelf={(shelf) => {
-                                     this.props.updateBooks(book, shelf);
+                                     updateBooks(book, shelf);
                                  }}
                              />
                          </div>
