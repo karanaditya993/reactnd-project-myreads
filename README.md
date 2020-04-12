@@ -24,5 +24,6 @@ Things to note:
 3. This application would benefit from a stronger state management sysem, i.e. Redux, since there are situations where props are being passed down through intermediary components without ever being used
 - Ex. `updateBooks` prop for `BooksList` and `SearchBooks` component
 - If we had a global store, you would never need to call an `updateBooks` hook, and would be able to commit a mutation to the store's state directly from the component that needed to
+4. The console is throwing an error related to the `react-toastify` library, insinuating that the DOMNode is not being removed properly
    
 Thanks very much and hope you enjoy playing around with this reading list!
