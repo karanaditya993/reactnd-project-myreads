@@ -117,6 +117,9 @@ class BooksApp extends React.Component {
                 }}
                 onSearch={ (query, callback) => { this.searchBooks(query, callback) }}
                 updateBooks={ (book, shelf) => {
+                    this.setState({
+                        showAlert: false,
+                    });
                     this.updateBooks(book, shelf);
                 }}
             />
