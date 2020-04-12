@@ -6,6 +6,7 @@ import BooksList from './components/BooksList'
 import LoadingScreen from './components/LoadingScreen'
 import { Route, Link } from 'react-router-dom'
 import Alert  from './components/Alert'
+import debounce from './helpers/debounce'
 
 const loadingText = 'Loading your books...';
 
@@ -65,6 +66,22 @@ class BooksApp extends React.Component {
       })
   }
 
+  getNewBooks(updatedBook) {
+      const newBooks = this.state.books.map((book) => {
+          if (book.id === updatedBook.id) {
+              book.shelf = updatedBook.shelf;
+              if (book.loading) {
+                  book.loading = false;
+              }
+          }
+          return book;
+      });
+      if (newBooks.map(item => item.id).indexOf(updatedBook.id) === -1) {
+          newBooks.push(updatedBook);
+      }
+      return newBooks;
+  }
+
   updateBooks(book, shelf) {
       this.showAlert();
       this.setState({
@@ -72,18 +89,7 @@ class BooksApp extends React.Component {
       });
       BooksAPI.update(book, shelf).then(() => {
           BooksAPI.get(book.id).then((updatedBook) => {
-              const newBooks = this.state.books.map((book) => {
-                  if (book.id === updatedBook.id) {
-                      book.shelf = updatedBook.shelf;
-                      if (book.loading) {
-                          book.loading = false;
-                      }
-                  }
-                  return book;
-              });
-              if (newBooks.map(item => item.id).indexOf(updatedBook.id) === -1) {
-                  newBooks.push(updatedBook);
-              }
+              const newBooks = this.getNewBooks(updatedBook);
               this.setState({
                   books: newBooks,
               });
@@ -99,11 +105,15 @@ class BooksApp extends React.Component {
       setTimeout(() => {
           BooksAPI.search(query).then((books) => {
               let isEmpty =(books && books.items && books.items.length === 0 && books.error) || !books;
-              this.searchResultsFindShelves(books, shelvedBookIds).then((booksWithShelves) => {
-                  const searchedBooks = isEmpty ? [] : booksWithShelves;
-                  callback(searchedBooks);
-              });
-          })
+              if (!isEmpty) {
+                  this.searchResultsFindShelves(books, shelvedBookIds).then((booksWithShelves) => {
+                      const searchedBooks = isEmpty ? [] : booksWithShelves;
+                      callback(searchedBooks);
+                  });
+              } else {
+                  callback([]);
+              }
+          });
       }, 500);
   }
 
@@ -144,7 +154,9 @@ class BooksApp extends React.Component {
                 onSearchClose={ () => {
                     history.push('/');
                 }}
-                onSearch={ (query, callback) => { this.searchBooks(query, callback) }}
+                onSearch={ (query, callback) => {
+                    debounce(this.searchBooks(query, callback), 1000);
+                }}
                 updateBooks={ (book, shelf) => {
                     this.updateBooks(book, shelf);
                 }}

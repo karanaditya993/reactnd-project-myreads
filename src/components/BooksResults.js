@@ -19,7 +19,7 @@ export default class BooksResults extends Component {
                      <div className="book">
                          <div className="book-top">
                              <div className="book-cover"
-                                  style={{backgroundImage: `url(${book.imageLinks.thumbnail})`}}>
+                                  style={{backgroundImage: `url(${book.imageLinks && book.imageLinks.thumbnail})`}}>
                                  {book.loading && (
                                      <div className="moving-book">
                                          <div className="moving-book-loader">
@@ -40,7 +40,9 @@ export default class BooksResults extends Component {
                              />
                          </div>
                          <div className="book-title">{book.title}</div>
-                         {book.authors && (<div className="book-authors">{book.authors[0]}</div>)}
+                         {book.authors && (<div className="book-authors">{book.authors.map(author => (
+                             <span key={author}>{author}</span>
+                         ))}</div>)}
                      </div>
                  </li>
              )}

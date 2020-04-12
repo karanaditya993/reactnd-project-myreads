@@ -1,5 +1,4 @@
 import React, { Component } from 'react'
-import { availableSearchTerms } from '../availableSearchTerms'
 import BooksResults from './BooksResults'
 import LoadingScreen from './LoadingScreen'
 import { PropTypes } from 'prop-types'
@@ -42,30 +41,31 @@ export default class SearchBooks  extends Component {
         }
     }
 
-    onSearchChange(searchTerm) {
-        const query = searchTerm.trim().toLowerCase();
-        if (availableSearchTerms.indexOf(searchTerm.trim().toLowerCase()) > -1) {
-             this.props.onSearch(query, (books) => {
-                 this.setState({
-                     searchedBooks: books,
-                 });
-                if (!books || !books.length) {
-                    this.setState({
-                        loadingResults: false,
-                        showNoResults: true,
-                    });
-                } else {
-                     this.setState({
-                        loadingResults: false,
-                        showNoResults: false,
-                    })
-                }
-            });
-        } else {
+    toggleLoadingState(books) {
+        if (!books || !books.length) {
             this.setState({
                 loadingResults: false,
                 showNoResults: true,
             });
+        } else {
+             this.setState({
+                loadingResults: false,
+                showNoResults: false,
+            })
+        }
+    }
+
+    onSearchChange(searchTerm) {
+        const query = searchTerm.trim().toLowerCase();
+        if (query.length !== 0) {
+            this.props.onSearch(query, (books) => {
+                 this.setState({
+                     searchedBooks: books,
+                 });
+                this.toggleLoadingState(books);
+            });
+        } else {
+            this.toggleLoadingState(null);
         }
     }
 
