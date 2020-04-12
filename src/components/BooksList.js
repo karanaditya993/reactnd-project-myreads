@@ -6,12 +6,11 @@ import BooksResults from './BooksResults.js'
 export default class BooksList extends Component {
     static propTypes = {
         books: PropTypes.object.isRequired,
-        movingBook: PropTypes.bool,
         updateBooks: PropTypes.func,
     };
 
     render() {
-        const { books, updateBooks, movingBook } = this.props;
+        const { books, updateBooks } = this.props;
 
         return(
             <div className="list-books">
@@ -25,7 +24,6 @@ export default class BooksList extends Component {
                             <div className="bookshelf-books">
                                 <ol className="books-grid">
                                     <BooksResults
-                                        movingBook={movingBook}
                                         books={books[shelf]}
                                         updateBooks={(book, shelf) => {
                                             updateBooks(book, shelf);

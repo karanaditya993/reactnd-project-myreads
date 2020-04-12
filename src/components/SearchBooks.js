@@ -72,7 +72,7 @@ export default class SearchBooks  extends Component {
         this.onSearchChange(event.target.value);
     }
     render() {
-        const { books, onSearchClose, } = this.props;
+        const { books, onSearchClose, updateBooks } = this.props;
         return (
              <div className="search-books">
                 <div className="search-books-bar">
@@ -88,7 +88,12 @@ export default class SearchBooks  extends Component {
                      {!this.state.showNoResults &&
                         !this.state.loadingResults &&
                      (
-                         <BooksResults books={books} />
+                         <BooksResults
+                             books={books}
+                             updateBooks={(book, shelf) => {
+                                 updateBooks(book, shelf);
+                            }}
+                         />
                      )}
                  </div>
                  {this.state.showNoResults &&
