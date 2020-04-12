@@ -1,9 +1,13 @@
 import React, { Component } from 'react'
 import { PropTypes  }  from 'prop-types'
+import BookshelfArranger from './BookshelfArranger';
+import ClipLoader from 'react-spinners/ClipLoader'
 
 export default class BookResults extends Component {
     static propTypes = {
         books: PropTypes.array.isRequired,
+        updateBooks: PropTypes.func,
+        movingBook: PropTypes.bool,
     };
 
     render()  {
@@ -15,18 +19,26 @@ export default class BookResults extends Component {
                  <li key={book.id}>
                      <div className="book">
                          <div className="book-top">
-                             <div className='book-cover'
+                             <div className="book-cover"
                                   style={{backgroundImage: `url(${book.imageLinks.thumbnail})`}}>
+                                 {book.loading && (
+                                     <div className="moving-book">
+                                         <div className="moving-book-loader">
+                                             <div className="sweet-loading">
+                                                <ClipLoader
+                                                    color={"#2e7c31"}
+                                                    loading={book.loading}
+                                                />
+                                             </div>
+                                         </div>
+                                     </div>)}
                              </div>
-                             <div className="book-shelf-changer">
-                                 <select>
-                                     <option value="move" disabled>Move to...</option>
-                                    <option value="currentlyReading">Currently Reading</option>
-                                    <option value="wantToRead">Want to Read</option>
-                                    <option value="read">Read</option>
-                                    <option value="none">None</option>
-                                 </select>
-                             </div>
+                             <BookshelfArranger
+                                 book={book}
+                                 updateShelf={(shelf) => {
+                                     this.props.updateBooks(book, shelf);
+                                 }}
+                             />
                          </div>
                          <div className="book-title">{book.title}</div>
                          {book.authors && (<div className="book-authors">{book.authors[0]}</div>)}

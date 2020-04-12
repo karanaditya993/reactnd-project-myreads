@@ -1,9 +1,15 @@
 import React, { Component } from 'react'
 import { availableSearchTerms } from '../availableSearchTerms'
-import BooksResults from './BooksResults';
-import LoadingScreen from './LoadingScreen';
+import BooksResults from './BooksResults'
+import LoadingScreen from './LoadingScreen'
+import { PropTypes } from 'prop-types'
 
 export default class SearchBooks  extends Component {
+    static propTypes = {
+        onSearch: PropTypes.func.isRequired,
+        updateBooks: PropTypes.func,
+    };
+
     state = {
         searchTerm: '',
         showNoResults: true,
