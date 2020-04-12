@@ -10,7 +10,6 @@ export default class Alert extends Component {
         updatedBook: PropTypes.object,
     };
     componentDidMount() {
-        debugger
         toast(`${this.props.updatedBook.title || 'Your book'} has been updated in your library!`);
     }
     render() {
