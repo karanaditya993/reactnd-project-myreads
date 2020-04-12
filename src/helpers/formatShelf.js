@@ -6,5 +6,5 @@ export function formatShelf(shelf) {
 }
 
 export function getShelves() {
-    return ['wantToRead', 'currentlyReading', 'read'];
+    return ['wantToRead', 'currentlyReading', 'read', 'none'];
 }

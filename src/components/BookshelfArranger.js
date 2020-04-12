@@ -20,7 +20,7 @@ export default class BookshelfArranger extends Component {
         return (
             <div className="book-shelf-changer">
                 <select
-                    value={book.shelf || 'move'}
+                    value={book.shelf || 'none'}
                     onChange={(event) => this.changeShelf(event)}>
                     <option value="move" disabled>Move to...</option>
                     {shelves.map((shelf) =>

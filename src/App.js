@@ -4,7 +4,6 @@ import './App.css'
 import SearchBooks from './components/SearchBooks'
 import BooksList from './components/BooksList'
 import LoadingScreen from './components/LoadingScreen'
-import partitionBooks from './helpers/partitionBooks'
 import { Route, Link } from 'react-router-dom'
 import Alert  from './components/Alert'
 
@@ -13,67 +12,80 @@ const loadingText = 'Loading your books...';
 class BooksApp extends React.Component {
   state = {
       showLoadingScreen: true,
-      partitionedBooks: {},
-      rawBooks: [],
+      books: [],
       showAlert: false,
       updatedBookTitle: ''
   };
 
   setMovingBook(book) {
-      const newBooks = this.state.rawBooks.map((b) => {
-          if (b.id === book.id) {
-              b.loading = true;
-          }
-          return b;
+      this.setState({
+          books: this.state.books.map((b) => {
+              if (b.id === book.id) {
+                  b.loading = true;
+              }
+              return b;
+          }),
       });
-      this.loadBooks(newBooks);
   }
 
-  loadBooks(books, options) {
-      this.setState({
-          rawBooks: books,
+  async getShelvedBook(bookId) {
+      return await BooksAPI.get(bookId).then((book) => {
+          return Promise.resolve(book);
       });
-      setTimeout(() => {
-          this.setState(() => ({
-              partitionedBooks: partitionBooks(this.state.rawBooks),
-              ...options,
-          }))
-      }, 0)
+  }
+
+  async addBooksToShelves(book, shelvedBookIds) {
+      if (shelvedBookIds.indexOf(book.id) > -1) {
+          return await this.getShelvedBook(book.id).then((shelf) => {
+              book.shelf = shelf;
+              return Promise.resolve(book.shelf);
+          });
+      } else {
+          return Promise.resolve(book);
+      }
+  }
+
+  async searchResultsFindShelves(books, shelvedBookIds) {
+      return await Promise.all(books.map((book) => {
+          return this.addBooksToShelves(book, shelvedBookIds).then((book) => {
+              return book;
+          });
+      }));
   }
 
   updateBooks(book, shelf, loadNewBooks) {
       BooksAPI.update(book, shelf).then(() => {
-          if (!loadNewBooks) {
-               this.setState({
-                   showAlert: true,
-                   updatedBookTitle: book.title
-              });
-          }
+          this.setState({
+               showAlert: true,
+               updatedBookTitle: book.title
+          });
           if (loadNewBooks) {
               BooksAPI.get(book.id).then((updatedBook) => {
-                  const newBooks = this.state.rawBooks.map((book) => {
-                      if (book.id === updatedBook.id) {
-                          book.shelf = updatedBook.shelf;
-                          if (book.loading) {
-                              book.loading = false;
+                  this.setState({
+                      books: this.state.books.map((book) => {
+                          if (book.id === updatedBook.id) {
+                              book.shelf = updatedBook.shelf;
+                              if (book.loading) {
+                                  book.loading = false;
+                              }
                           }
-                      }
-                      return book;
+                          return book;
+                      }),
                   });
-                  this.loadBooks(newBooks);
               });
           }
       });
   }
 
   searchBooks(query, callback) {
+      const shelvedBookIds = this.state.books.map(book => book.id);
       setTimeout(() => {
           BooksAPI.search(query).then((books) => {
               let isEmpty =(books && books.items && books.items.length === 0 && books.error) || !books;
-              this.setState({
-                  rawBooks: isEmpty ? [] : books,
+              this.searchResultsFindShelves(books, shelvedBookIds).then((booksWithShelves) => {
+                  const searchedBooks = isEmpty ? [] : booksWithShelves;
+                  callback(searchedBooks);
               });
-              callback(books);
           })
       }, 500);
   }
@@ -81,7 +93,8 @@ class BooksApp extends React.Component {
   componentDidMount() {
       setTimeout(() => {
           BooksAPI.getAll().then((books) => {
-              this.loadBooks(books, {
+              this.setState({
+                  books: books,
                   showLoadingScreen: false,
               });
           });
@@ -95,7 +108,7 @@ class BooksApp extends React.Component {
               this.state.showLoadingScreen ? (<LoadingScreen isLoading={this.state.showLoadingScreen} text={loadingText}/>) :
                   (<div className="books-list-container">
                         <BooksList
-                            books={this.state.partitionedBooks}
+                            books={this.state.books}
                             updateBooks={(book, shelf) => {
                                 this.setMovingBook(book);
                                 this.updateBooks(book, shelf, true)
@@ -110,10 +123,9 @@ class BooksApp extends React.Component {
           />
         <Route exact path='/search' render={({ history }) =>
             <SearchBooks
-                books={this.state.rawBooks}
+                books={this.state.books}
                 onSearchClose={ () => {
                     history.push('/');
-                    this.setState(() => {});
                 }}
                 onSearch={ (query, callback) => { this.searchBooks(query, callback) }}
                 updateBooks={ (book, shelf) => {

@@ -15,6 +15,7 @@ export default class SearchBooks  extends Component {
         showNoResults: true,
         showEasterEgg: false,
         loadingResults: false,
+        searchedBooks: [],
     };
 
     checkForEasterEgg(value) {
@@ -45,6 +46,9 @@ export default class SearchBooks  extends Component {
         const query = searchTerm.trim().toLowerCase();
         if (availableSearchTerms.indexOf(searchTerm.trim().toLowerCase()) > -1) {
              this.props.onSearch(query, (books) => {
+                 this.setState({
+                     searchedBooks: books,
+                 });
                 if (!books || !books.length) {
                     this.setState({
                         loadingResults: false,
@@ -72,7 +76,9 @@ export default class SearchBooks  extends Component {
         this.onSearchChange(event.target.value);
     }
     render() {
-        const { books, onSearchClose, updateBooks } = this.props;
+        const { onSearchClose, updateBooks } = this.props;
+        const { searchedBooks } = this.state;
+
         return (
              <div className="search-books">
                 <div className="search-books-bar">
@@ -89,7 +95,7 @@ export default class SearchBooks  extends Component {
                         !this.state.loadingResults &&
                      (
                          <BooksResults
-                             books={books}
+                             books={searchedBooks}
                              updateBooks={(book, shelf) => {
                                  updateBooks(book, shelf);
                             }}
