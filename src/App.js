@@ -14,7 +14,7 @@ class BooksApp extends React.Component {
       showLoadingScreen: true,
       books: [],
       showAlert: false,
-      updatedBookTitle: ''
+      updatedBook: {}
   };
 
   setMovingBook(book) {
@@ -53,27 +53,44 @@ class BooksApp extends React.Component {
       }));
   }
 
-  updateBooks(book, shelf, loadNewBooks) {
+  hideAlert() {
+      this.setState({
+          showAlert: false,
+      });
+  }
+
+  showAlert() {
+      this.setState({
+          showAlert: true,
+      })
+  }
+
+  updateBooks(book, shelf) {
+      this.showAlert();
+      this.setState({
+          updatedBook: book,
+      });
       BooksAPI.update(book, shelf).then(() => {
-          this.setState({
-               showAlert: true,
-               updatedBookTitle: book.title
-          });
-          if (loadNewBooks) {
-              BooksAPI.get(book.id).then((updatedBook) => {
-                  this.setState({
-                      books: this.state.books.map((book) => {
-                          if (book.id === updatedBook.id) {
-                              book.shelf = updatedBook.shelf;
-                              if (book.loading) {
-                                  book.loading = false;
-                              }
-                          }
-                          return book;
-                      }),
-                  });
+          BooksAPI.get(book.id).then((updatedBook) => {
+              const newBooks = this.state.books.map((book) => {
+                  if (book.id === updatedBook.id) {
+                      book.shelf = updatedBook.shelf;
+                      if (book.loading) {
+                          book.loading = false;
+                      }
+                  }
+                  return book;
               });
-          }
+              if (newBooks.map(item => item.id).indexOf(updatedBook.id) === -1) {
+                  newBooks.push(updatedBook);
+              }
+              this.setState({
+                  books: newBooks,
+              });
+              setTimeout(() => {
+                  this.hideAlert();
+              }, 2000)
+          });
       });
   }
 
@@ -111,7 +128,7 @@ class BooksApp extends React.Component {
                             books={this.state.books}
                             updateBooks={(book, shelf) => {
                                 this.setMovingBook(book);
-                                this.updateBooks(book, shelf, true)
+                                this.updateBooks(book, shelf);
                             }}
                         />
                         <div className="open-search">
@@ -129,15 +146,12 @@ class BooksApp extends React.Component {
                 }}
                 onSearch={ (query, callback) => { this.searchBooks(query, callback) }}
                 updateBooks={ (book, shelf) => {
-                    this.setState({
-                        showAlert: false,
-                    });
                     this.updateBooks(book, shelf);
                 }}
             />
         }/>
         {this.state.showAlert && (
-            <Alert updatedBook={this.state.updatedBookTitle}/>
+            <Alert updatedBook={this.state.updatedBook}/>
         )}
       </div>
     )

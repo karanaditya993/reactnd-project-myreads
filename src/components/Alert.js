@@ -7,10 +7,11 @@ import { PropTypes } from 'prop-types'
 
 export default class Alert extends Component {
     static propTypes = {
-        updatedBookTitle: PropTypes.string,
+        updatedBook: PropTypes.object,
     };
     componentDidMount() {
-        toast(`${this.props.updatedBookTitle || 'Your book'} was successfully added to your library!`);
+        debugger
+        toast(`${this.props.updatedBook.title || 'Your book'} has been updated in your library!`);
     }
     render() {
         return (

@@ -10,7 +10,7 @@ export default function partitionBooks(books = []) {
         currentlyReading: [],
         read: [],
     };
-    books.map((book) => {
+    books.forEach((book) => {
         if (book.shelf && book.shelf !== 'none') {
             partitionedBooks[book.shelf].push(book)
         }
